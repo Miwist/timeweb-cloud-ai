@@ -1,0 +1,9 @@
+src/
+tests/
+*.md
+*.json
+*.ts
+*.js
+jest.config.ts
+tsconfig*
+!.npmignore

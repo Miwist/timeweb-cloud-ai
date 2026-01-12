@@ -1,0 +1,59 @@
+{
+  "name": "timeweb-cloud-ai",
+  "version": "0.1.0",
+  "description": "Node.js client for Timeweb Cloud AI API",
+  "keywords": [
+    "timeweb",
+    "cloud",
+    "ai",
+    "api",
+    "client",
+    "typescript"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
+    "test": "node --import ./register-ts.js --test tests/client.test.ts",
+    "test:integration": "node --test tests/integration.test.mjs",
+    "test:watch": "nodemon --exec 'node --import ./register-ts.js --test tests/client.test.ts' --ext ts --watch src --watch tests"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "dotenv": "^17.2.3",
+    "nodemon": "^3.0.0",
+    "ts-node": "^10.9.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+"repository": {
+    "type": "git",
+    "url": "git+https://github.com/miwist/timeweb-cloud-ai.git"
+  },
+  "bugs": {
+    "url": "https://github.com/miwist/timeweb-cloud-ai/issues"
+  },
+  "homepage": "https://github.com/miwist/timeweb-cloud-ai/#readme"
+}
