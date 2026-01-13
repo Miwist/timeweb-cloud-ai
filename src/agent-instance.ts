@@ -1,5 +1,3 @@
-// agent-instance.ts
-
 import { TimewebCloudAIClient } from "./client.js";
 import {
   AgentResponse,
@@ -144,6 +142,6 @@ export class AgentInstance {
     if (buffer[0] === 0xff && buffer[1] === 0xd8) return "image/jpeg";
     if (buffer[0] === 0x89 && buffer.toString("ascii", 0, 4) === "\x89PNG")
       return "image/png";
-    return "image/jpeg"; // fallback
+    return "image/jpeg";
   }
 }

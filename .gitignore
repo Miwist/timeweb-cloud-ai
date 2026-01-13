@@ -28,3 +28,6 @@ logs/
 .vscode/
 .idea/
 *.sublime-workspace
+
+dist/
+*.tgz

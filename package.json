@@ -1,6 +1,6 @@
 {
   "name": "timeweb-cloud-ai",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Node.js client for Timeweb Cloud AI API",
   "keywords": [
     "timeweb",
@@ -49,7 +49,7 @@
   "engines": {
     "node": ">=18"
   },
-"repository": {
+  "repository": {
     "type": "git",
     "url": "git+https://github.com/miwist/timeweb-cloud-ai.git"
   },
