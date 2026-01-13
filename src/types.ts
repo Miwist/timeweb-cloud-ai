@@ -9,22 +9,33 @@ export interface RequestOptions {
   agent_access_id?: string;
 }
 
+export type ChatRole = "user" | "assistant" | "system";
+
 export interface AgentResponse {
   id: string;
   message: string;
   finish_reason: Record<string, any>;
 }
 
+export interface ChatMessageDto {
+  role: ChatRole;
+  content:
+    | string
+    | Array<{
+        type: "text" | "image_url" | "input_audio";
+        text?: string;
+        image_url?: { url: string };
+        input_audio?: { base64Audio: string; format: "wav" | "mp3" };
+      }>;
+}
+
 export interface ChatCompletionRequest {
   model?: string;
-  messages: Array<{
-    role: "user" | "assistant" | "system";
-    content: string | Array<{ type: string; [key: string]: any }>;
-  }>;
+  messages: ChatMessageDto[];
   temperature?: number;
+  max_tokens?: number;
   max_completion_tokens?: number;
   stream?: boolean;
-  [key: string]: any;
 }
 
 export interface CallAgentRequest {
@@ -44,7 +55,7 @@ export interface ChatCompletionResponse {
   choices: Array<{
     index: number;
     message: {
-      role: "assistant" | "user" | "system";
+      role: ChatRole;
       content: string;
     };
     finish_reason:
@@ -60,4 +71,19 @@ export interface ChatCompletionResponse {
     total_tokens: number;
   };
   system_fingerprint?: string;
+}
+
+export interface ChatWithImageOptions {
+  text?: string;
+  image: Buffer | string;
+  mimeType?: "image/jpeg" | "image/png" | "image/webp";
+  max_tokens?: number;
+  temperature?: number;
+}
+
+export interface ChatWithAudioOptions {
+  text?: string;
+  audio: string;
+  max_tokens?: number;
+  temperature?: number;
 }

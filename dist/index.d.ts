@@ -1,25 +1,36 @@
+import { Buffer } from 'buffer';
+
 interface TimewebCloudAIClientOptions {
     accessToken: string;
     proxySource: string;
 }
+type ChatRole = "user" | "assistant" | "system";
 interface AgentResponse {
     id: string;
     message: string;
     finish_reason: Record<string, any>;
 }
+interface ChatMessageDto {
+    role: ChatRole;
+    content: string | Array<{
+        type: "text" | "image_url" | "input_audio";
+        text?: string;
+        image_url?: {
+            url: string;
+        };
+        input_audio?: {
+            base64Audio: string;
+            format: "wav" | "mp3";
+        };
+    }>;
+}
 interface ChatCompletionRequest {
     model?: string;
-    messages: Array<{
-        role: "user" | "assistant" | "system";
-        content: string | Array<{
-            type: string;
-            [key: string]: any;
-        }>;
-    }>;
+    messages: ChatMessageDto[];
     temperature?: number;
+    max_tokens?: number;
     max_completion_tokens?: number;
     stream?: boolean;
-    [key: string]: any;
 }
 interface CallAgentRequest {
     message?: string;
@@ -37,7 +48,7 @@ interface ChatCompletionResponse {
     choices: Array<{
         index: number;
         message: {
-            role: "assistant" | "user" | "system";
+            role: ChatRole;
             content: string;
         };
         finish_reason: "stop" | "length" | "tool_calls" | "content_filter" | "function_call";
@@ -50,18 +61,67 @@ interface ChatCompletionResponse {
     system_fingerprint?: string;
 }
 
+declare class TimewebChatCompletion {
+    private readonly rawResponse;
+    constructor(rawResponse: ChatCompletionResponse);
+    /** Возвращает основной текст ответа */
+    get text(): string;
+    /** Возвращает весь исходный ответ (для продвинутых сценариев) */
+    get raw(): ChatCompletionResponse;
+    /** Возвращает количество использованных токенов */
+    get usage(): {
+        prompt_tokens: number;
+        completion_tokens: number;
+        total_tokens: number;
+    } | undefined;
+}
+
 declare class AgentInstance {
     private readonly client;
     readonly agent_access_id: string;
     constructor(client: TimewebCloudAIClient, agent_access_id: string);
+    /**
+     * Вызывает агента через упрощённый endpoint `/call`.
+     */
     call(payload: CallAgentRequest): Promise<AgentResponse>;
-    chatCompletions(payload: ChatCompletionRequest): Promise<any>;
+    /**
+     * OpenAI-совместимый чат. Возвращает удобную обёртку над ответом.
+     */
+    chatCompletions(payload: ChatCompletionRequest): Promise<TimewebChatCompletion>;
+    /**
+     * Получает список моделей, доступных для этого агента.
+     */
     getModels(): Promise<{
         object: "list";
         data: Array<{
             id: string;
         }>;
     }>;
+    /**
+     * Отправляет запрос с изображением и текстом.
+     * Поддерживает Buffer, base64-строку или путь к файлу.
+     */
+    chatWithImage(options: {
+        text?: string;
+        image: Buffer | string;
+        mimeType?: "image/jpeg" | "image/png" | "image/webp";
+        max_tokens?: number;
+        temperature?: number;
+    }): Promise<TimewebChatCompletion>;
+    /**
+     * Отправляет запрос с аудио (WAV, 16kHz, mono) и текстом.
+     * Ожидается base64-кодированная строка в формате WAV.
+     */
+    chatWithAudio(options: {
+        text?: string;
+        audio: string;
+        max_tokens?: number;
+        temperature?: number;
+    }): Promise<TimewebChatCompletion>;
+    /**
+     * Определяет MIME-тип изображения по сигнатуре буфера.
+     */
+    private detectMimeTypeFromBuffer;
 }
 
 /**
