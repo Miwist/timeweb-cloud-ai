@@ -138,10 +138,20 @@ export class AgentInstance {
   /**
    * Определяет MIME-тип изображения по сигнатуре буфера.
    */
-  private detectMimeTypeFromBuffer(buffer: Buffer): "image/jpeg" | "image/png" {
+  private detectMimeTypeFromBuffer(
+    buffer: Buffer
+  ): "image/jpeg" | "image/png" | "image/webp" {
+    if (buffer.length < 4) return "image/jpeg";
     if (buffer[0] === 0xff && buffer[1] === 0xd8) return "image/jpeg";
     if (buffer[0] === 0x89 && buffer.toString("ascii", 0, 4) === "\x89PNG")
       return "image/png";
+    if (
+      buffer.length >= 12 &&
+      buffer.toString("ascii", 0, 4) === "RIFF" &&
+      buffer.toString("ascii", 8, 12) === "WEBP"
+    ) {
+      return "image/webp";
+    }
     return "image/jpeg";
   }
 }

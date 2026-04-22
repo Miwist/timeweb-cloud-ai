@@ -5,180 +5,144 @@
 [![Node.js >=18](https://img.shields.io/badge/Node.js-%3E%3D18-green?logo=node.js)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Strict-blue?logo=typescript)](https://www.typescriptlang.org/)
 
-> 🚀 TypeScript-клиент для [Timeweb Cloud AI API](https://agent.timeweb.cloud/docs)  
-> Работает с агентами, диалогами и OpenAI-совместимыми чатами.
+TypeScript/JavaScript-клиент для [Timeweb Cloud AI API](https://agent.timeweb.cloud/docs).
+Поддерживает:
+- вызовы агента через `/call`;
+- OpenAI-совместимые `chat/completions`;
+- удобный agent-bound API (`client.agent(...)`);
+- мультимодальные запросы (изображение и аудио).
 
----
-
-## 📦 Установка
+## Установка
 
 ```bash
 npm install timeweb-cloud-ai
 ```
 
-**Требования:**
-- Node.js **>= 18**
-- TypeScript (если используете в TS-проекте)
+Требования:
+- Node.js `>=18`
+- глобальный `fetch` (в Node 18+ уже встроен)
 
----
+## Что нужно получить в Timeweb
 
-## 🔑 Необходимо получить
+1. `accessToken` - токен доступа в [Timeweb AI-Агенты](https://timeweb.cloud/my/cloud-ai/agents)
+2. `agent_access_id` - ID агента (например, `agt_xxx`)
+3. `proxySource` - идентификатор вашего приложения (например, `my-app`)
 
-1. **Access Token** — в панели [Timeweb AI-Агенты](https://timeweb.cloud/my/cloud-ai/agents)
-2. **Agent ID** (`agent_access_id`) — уникальный идентификатор вашего агента
-3. **Proxy Source** — произвольная строка-идентификатор вашего приложения (например, `my-app`)
+Если у вас еще нет аккаунта Timeweb, можно зарегистрироваться по реферальной ссылке:
+[https://timeweb.cloud/?i=141579](https://timeweb.cloud/?i=141579)
 
-> ⚠️ Все три параметра обязательны для работы.
-
----
-
-## 🚀 Быстрый старт
-
-### Базовое использование
+## Быстрый старт
 
 ```ts
-import { TimewebCloudAIClient } from 'timeweb-cloud-ai';
+import { TimewebCloudAIClient } from "timeweb-cloud-ai";
 
 const client = new TimewebCloudAIClient({
-  accessToken: 'ваш_токен',
-  proxySource: 'my-app',
+  accessToken: process.env.TIMEWEB_AI_TOKEN!,
+  proxySource: "my-app",
 });
 
-const response = await client.call('agt_xxx', {
-  message: 'Привет! Кто ты?',
+const response = await client.call("agt_xxx", {
+  message: "Привет! Кто ты?",
 });
 
 console.log(response.message);
 ```
 
-### Удобный агент-специфичный интерфейс
-
-```ts
-const agent = client.agent('agt_xxx');
-
-// Теперь не нужно передавать agent_id в каждый вызов
-const res1 = await agent.call({ message: 'Привет!' });
-const res2 = await agent.chatCompletions({
-  messages: [{ role: 'user', content: 'Напиши стих' }],
-});
-```
-
----
-
-## 📚 Доступные методы
+## Основные методы
 
 ### `client.call(agentId, payload)`
-Вызывает агента с сообщением или файлами.
+
+Простой вызов агента с текстом и/или файлами.
 
 ```ts
-await client.call('agt_xxx', {
-  message: 'Проанализируй документ',
-  file_ids: ['file_abc123'],
+await client.call("agt_xxx", {
+  message: "Проанализируй документ",
+  file_ids: ["file_abc123"],
 });
 ```
 
 ### `client.chatCompletions(agentId, payload)`
-OpenAI-совместимый endpoint для генерации чата.
+
+OpenAI-совместимый endpoint:
 
 ```ts
-await client.chatCompletions('agt_xxx', {
-  model: 'gpt-4o',
-  messages: [{ role: 'user', content: 'Привет!' }],
+await client.chatCompletions("agt_xxx", {
+  model: "gpt-4o",
+  messages: [{ role: "user", content: "Напиши короткий стих" }],
   temperature: 0.7,
 });
 ```
 
 ### `client.getModels(agentId)`
-Получает список моделей, доступных для агента.
+
+Возвращает список моделей, доступных для конкретного агента.
 
 ### `client.agent(agentId)`
-Создаёт привязанный к агенту экземпляр для удобной работы.
+
+Создает экземпляр, привязанный к одному агенту:
 
 ```ts
-const agent = client.agent('agt_xxx');
-await agent.call({ message: '...' });
-await agent.chatCompletions({ messages: [...] });
+const agent = client.agent("agt_xxx");
+
+await agent.call({ message: "Привет!" });
+const completion = await agent.chatCompletions({
+  messages: [{ role: "user", content: "Сделай краткое резюме текста" }],
+});
+
+console.log(completion.text);
 ```
 
-> 💡 Метод `getEmbedScript` существует, но **работает только во фронтенде** (из-за CORS). В Node.js он бесполезен.
-
-### 🖼️ Мультимодальные запросы «из коробки»
-
-Библиотека поддерживает удобную работу с изображениями и аудио через расширенные методы агента. Больше не нужно вручную собирать структуру `content` или кодировать файлы в base64 - всё делается автоматически.
+## Мультимодальные запросы
 
 ### Анализ изображений
 
-Отправьте картинку вместе с текстовым запросом:
-
 ```ts
-import { TimewebCloudAIClient } from "timeweb-cloud-ai";
-import { readFileSync } from "fs";
+import { readFileSync } from "node:fs";
 
-const client = new TimewebCloudAIClient({
-  accessToken: "ваш_токен",
-  proxySource: "my-app",
+const agent = client.agent("agt_xxx");
+
+const result = await agent.chatWithImage({
+  text: "Что изображено на фото?",
+  image: readFileSync("./photo.jpg"), // Buffer | base64 | путь к файлу
 });
 
-const agent = client.agent("agt_xxx"); // ID мультимодального агента (например, gpt-4o)
-
-// Поддерживается Buffer, base64 или путь к файлу
-const response = await agent.chatWithImage({
-  text: "Что изображено на этой фотографии?",
-  image: readFileSync("./photo.jpg"),
-  // mimeType: "image/jpeg" // опционально, автоопределение по сигнатуре
-});
-
-console.log(response.text);
+console.log(result.text);
 ```
 
-### Обработка аудио
-
-Расшифровка или анализ речи из WAV-файла (16kHz, mono):
+### Анализ/расшифровка аудио
 
 ```ts
-// Предположим, у вас уже есть base64-строка в формате WAV
-const base64Wav = "..."; // результат конвертации OGG → WAV
+const agent = client.agent("agt_xxx");
 
-const response = await agent.chatWithAudio({
-  text: "Кратко перескажи основную мысль.",
-  audio: base64Wav,
+const result = await agent.chatWithAudio({
+  text: "Кратко перескажи основную мысль аудио",
+  audio: "BASE64_WAV_STRING",
 });
 
-console.log(response.text);
+console.log(result.text);
 ```
 
-> ⚠️ **Важно**: мультимодальные функции работают **только с агентами на основе совместимых моделей**, таких как `gpt-4o`, `gpt-4o-mini` и других, поддерживающих изображения/аудио. Убедитесь, что ваш агент использует такую модель в [личном кабинете Timeweb Cloud](https://timeweb.cloud/ai).
+Важно: мультимодальные методы работают только с моделями, поддерживающими изображение/аудио (например, `gpt-4o`, `gpt-4o-mini`).
 
-### Обработка ошибок
-
-Библиотека выбрасывает кастомную ошибку `TimewebAPIError`:
+## Обработка ошибок
 
 ```ts
+import { TimewebCloudAIClient, TimewebAPIError } from "timeweb-cloud-ai";
+
 try {
-  await client.call('agt_xxx', { message: '...' });
+  await client.call("agt_xxx", { message: "..." });
 } catch (err) {
   if (err instanceof TimewebAPIError) {
-    console.error('API Error:', err.status, err.body);
+    console.error("API error:", err.status, err.body);
+  } else {
+    console.error("Unknown error:", err);
   }
 }
 ```
----
 
-## 📁 Структура проекта
+## Контакт
 
-- ✅ Написан на **TypeScript**
-- ✅ Поддержка **ESM и CommonJS**
-- ✅ Включает **.d.ts** типы
-- ✅ Без внешних зависимостей (только `fetch` из Node.js)
-- ✅ Лёгкий
-
----
-
-## 📬 Контакт
-
-По вопросам, предложениям или багам - пишите в [Telegram](https://t.me/miwist)
-
----
+По вопросам и предложениям: [Telegram](https://t.me/miwist)
 
 ## Лицензия
 
