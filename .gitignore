@@ -31,3 +31,8 @@ logs/
 
 dist/
 *.tgz
+
+# Локальные правила редактора (не в репозиторий)
+.cursor/
+AGENTS.md
+.cursorrules

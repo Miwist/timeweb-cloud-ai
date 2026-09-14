@@ -87,3 +87,52 @@ export interface ChatWithAudioOptions {
   max_tokens?: number;
   temperature?: number;
 }
+
+export interface GenerateImageOptions {
+  /** Текстовое описание картинки */
+  prompt: string;
+  /**
+   * Если true (по умолчанию) — скачивает первую найденную картинку в Buffer.
+   * Для data: URL декодирует base64 без сети.
+   */
+  download?: boolean;
+  /**
+   * Доп. инструкция агенту. По умолчанию просим вернуть картинку
+   * (markdown/URL) без лишнего текста.
+   */
+  instruction?: string;
+}
+
+export interface GeneratedImageAsset {
+  url: string;
+  kind: "markdown" | "html" | "data" | "bare_url";
+  alt?: string;
+  mimeType?: string;
+  buffer?: Buffer;
+}
+
+export interface GenerateImageResult {
+  text: string;
+  images: GeneratedImageAsset[];
+  raw: AgentResponse;
+}
+
+export interface ImagesGenerationsRequest {
+  model: string;
+  prompt: string;
+  n?: number;
+  size?: string;
+  quality?: string;
+  style?: string;
+  response_format?: "url" | "b64_json";
+  user?: string;
+}
+
+export interface ImagesGenerationsResponse {
+  created: number;
+  data: Array<{
+    url?: string;
+    b64_json?: string;
+    revised_prompt?: string;
+  }>;
+}
