@@ -1,0 +1,28 @@
+name: Задача
+description: Новая фича или доработка пакета
+title: ""
+labels: ["type: feature"]
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Зачем
+      description: Зачем делаем и какой результат нужен
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: Что входит / что не входит
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance
+      description: Чеклист готовности
+      value: |
+        - [ ]
+    validations:
+      required: true

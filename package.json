@@ -1,7 +1,7 @@
 {
   "name": "timeweb-cloud-ai",
-  "version": "0.1.5",
-  "description": "Node.js client for Timeweb Cloud AI API",
+  "version": "0.2.0",
+  "description": "Node.js client for Timeweb Cloud AI API (agents + AI Gateway, image generation)",
   "keywords": [
     "timeweb",
     "cloud",
@@ -34,9 +34,9 @@
   "type": "module",
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts --clean",
-    "test": "node --import ./register-ts.js --test tests/client.test.ts",
+    "test": "node --import ./register-ts.js --test tests/client.test.ts tests/image.test.ts",
     "test:integration": "node --test tests/integration.test.mjs",
-    "test:watch": "nodemon --exec 'node --import ./register-ts.js --test tests/client.test.ts' --ext ts --watch src --watch tests"
+    "test:watch": "nodemon --exec 'node --import ./register-ts.js --test tests/client.test.ts tests/image.test.ts' --ext ts --watch src --watch tests"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

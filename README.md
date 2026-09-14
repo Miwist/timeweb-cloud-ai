@@ -1,16 +1,19 @@
 # timeweb-cloud-ai
 
 [![npm version](https://img.shields.io/npm/v/timeweb-cloud-ai?color=cb3837&logo=npm)](https://www.npmjs.com/package/timeweb-cloud-ai)
-[![npm downloads](https://img.shields.io/npm/dm/timeweb-cloud-ai?color=blue)](https://www.npmjs.com/package/timeweb-cloud-ai)
-[![Node.js >=18](https://img.shields.io/badge/Node.js-%3E%3D18-green?logo=node.js)](https://nodejs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-Strict-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![npm downloads](https://img.shields.io/npm/dm/timeweb-cloud-ai)](https://www.npmjs.com/package/timeweb-cloud-ai)
+[![npm total downloads](https://img.shields.io/npm/dt/timeweb-cloud-ai)](https://www.npmjs.com/package/timeweb-cloud-ai)
+[![CI](https://github.com/Miwist/timeweb-cloud-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/Miwist/timeweb-cloud-ai/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/npm/l/timeweb-cloud-ai)](https://github.com/Miwist/timeweb-cloud-ai/blob/master/LICENSE)
+[![Node.js](https://img.shields.io/node/v/timeweb-cloud-ai?logo=node.js)](https://nodejs.org/)
 
 TypeScript/JavaScript-клиент для [Timeweb Cloud AI API](https://agent.timeweb.cloud/docs).
 Поддерживает:
 - вызовы агента через `/call`;
 - OpenAI-совместимые `chat/completions`;
 - удобный agent-bound API (`client.agent(...)`);
-- мультимодальные запросы (изображение и аудио).
+- мультимодальные запросы (изображение и аудио);
+- генерацию картинок через агента (`generateImage`) и AI Gateway (`imagesGenerations`).
 
 ## Установка
 
@@ -124,6 +127,56 @@ console.log(result.text);
 
 Важно: мультимодальные методы работают только с моделями, поддерживающими изображение/аудио (например, `gpt-4o`, `gpt-4o-mini`).
 
+## Генерация изображений
+
+У OpenAI-совместимого API **агента** нет `/v1/images` (это прямо сказано в доках Timeweb).
+Картинки делаются так:
+
+1. В панели агента включите опцию **«Генерация изображений»** и выберите image-модель.
+2. Вызовите `agent.generateImage(...)` — под капотом это `/call`, ответ парсится на markdown/URL/data-URI, картинка скачивается в `Buffer`.
+
+```ts
+const agent = client.agent("agt_xxx");
+
+const result = await agent.generateImage({
+  prompt: "Минималистичная обложка поста: синий круг на белом фоне",
+});
+
+console.log(result.images[0]?.url);
+console.log(result.images[0]?.buffer?.length);
+```
+
+Также можно разобрать любой текст ответа вручную:
+
+```ts
+import { extractImagesFromText } from "timeweb-cloud-ai";
+
+const images = extractImagesFromText(result.text);
+```
+
+### AI Gateway (модели напрямую)
+
+Отдельный ключ из раздела **AI Gateway** (`https://api.timeweb.ai/v1`):
+
+```ts
+import { TimewebAIGatewayClient } from "timeweb-cloud-ai";
+
+const gateway = new TimewebAIGatewayClient({
+  apiKey: process.env.TIMEWEB_GATEWAY_API_KEY!,
+});
+
+const images = await gateway.imagesGenerations({
+  model: "MODEL_NAME", // имя модели из панели Gateway
+  prompt: "blue circle on white background",
+  response_format: "url",
+});
+
+console.log(images.data[0]?.url);
+```
+
+Доступность `/images/generations` зависит от конкретной модели в Gateway.
+Если endpoint недоступен для модели — используйте путь через агента (`generateImage`).
+
 ## Обработка ошибок
 
 ```ts
@@ -147,3 +200,7 @@ try {
 ## Лицензия
 
 MIT © [miwist](https://t.me/miwist)
+
+## Разработка
+
+Процесс issue → PR → публикация в npm: [docs/workflow.md](./docs/workflow.md).
