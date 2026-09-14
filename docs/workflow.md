@@ -20,3 +20,8 @@ Issue, PR, коммиты и документация — на русском.
 ## Секреты
 
 В настройках репозитория: `NPM_TOKEN` (Automation token с правом publish).
+
+Для provenance поле `repository.url` в `package.json` должно совпадать с GitHub
+(регистр владельца важен: `Miwist`, не `miwist`). Рекомендуемый вид:
+`https://github.com/Miwist/<pkg>.git`.
+
