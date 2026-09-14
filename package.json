@@ -51,10 +51,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/miwist/timeweb-cloud-ai.git"
+    "url": "https://github.com/Miwist/timeweb-cloud-ai"
   },
   "bugs": {
-    "url": "https://github.com/miwist/timeweb-cloud-ai/issues"
+    "url": "https://github.com/Miwist/timeweb-cloud-ai/issues"
   },
-  "homepage": "https://github.com/miwist/timeweb-cloud-ai/#readme"
+  "homepage": "https://github.com/Miwist/timeweb-cloud-ai#readme"
 }
